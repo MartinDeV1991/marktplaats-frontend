@@ -79,57 +79,75 @@ const ProductsPageList = ({ searchName }) => {
 						setLoggedIn(false)
 					})
 			})
-	}, [searchName, loggedIn, userId])
+			.catch((error) => {
+				console.log(error)
+				setLoggedIn(false)
+				fetch(`${process.env.REACT_APP_PATH}api${searchName}`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: localStorage.getItem('token'),
+						userId: userId,
+					},
+				})
+					.then((res) => {
+						return res.json()
+					})
+					.then((productData) => {
+						setProducts(productData)
+					})
+					})
+			}, [searchName, loggedIn, userId])
 
-	const incrementHandler = () => {
-		setNumber((prevNumber) => prevNumber + 10)
-	}
-
-	const loadMoreButton = showLoadButton && (
-		<button className={'loadMoreButton'} onClick={incrementHandler}>
-			LOAD MORE
-		</button>
-	)
-
-	useEffect(() => {
-		const filteredProducts = products.filter((product) =>
-			category
-				? product.productType === category
-				: product.productType !== category
-		)
-		if (filteredProducts.length > number) {
-			setLimitedProducts(filteredProducts.slice(0, number))
-
-			setShowLoadButton(true)
-
-			return
+		const incrementHandler = () => {
+			setNumber((prevNumber) => prevNumber + 10)
 		}
-		setLimitedProducts(products)
-		setShowLoadButton(false)
-	}, [products, number, category])
 
-	return (
-		<Container className="d-flex align-items-center justify-content-center">
-			{isLoading && <Spinner animation="border" role="status"></Spinner>}
-			{!isLoading && products.length === 0 && <h3>There are no products.</h3>}
-			<div>
-				{limitedProducts
-					.filter((product) =>
-						category
-							? product.productType === category
-							: product.productType !== category
-					)
-					.map((filteredProduct) => (
-						<ProductsPageCard
-							key={filteredProduct.id}
-							product={filteredProduct}
-							loggedIn={loggedIn}
-						/>
-					))}
-				{!isLoading && loadMoreButton}
-			</div>
-		</Container>
-	)
-}
+		const loadMoreButton = showLoadButton && (
+			<button className={'loadMoreButton'} onClick={incrementHandler}>
+				LOAD MORE
+			</button>
+		)
+
+		useEffect(() => {
+			const filteredProducts = products.filter((product) =>
+				category
+					? product.productType === category
+					: product.productType !== category
+			)
+			if (filteredProducts.length > number) {
+				setLimitedProducts(filteredProducts.slice(0, number))
+
+				setShowLoadButton(true)
+
+				return
+			}
+			setLimitedProducts(products)
+			setShowLoadButton(false)
+		}, [products, number, category])
+
+		return (
+			<Container className="d-flex align-items-center justify-content-center">
+				{isLoading && <Spinner animation="border" role="status"></Spinner>}
+				{!isLoading && products.length === 0 && <h3>There are no products.</h3>}
+				<div>
+					{limitedProducts
+						.filter((product) =>
+							category
+								? product.productType === category
+								: product.productType !== category
+						)
+						.map((filteredProduct) => (
+							<ProductsPageCard
+								key={filteredProduct.id}
+								product={filteredProduct}
+								loggedIn={loggedIn}
+							/>
+						))}
+					{!isLoading && loadMoreButton}
+				</div>
+			</Container>
+		)
+	}
 
 export default ProductsPageList
